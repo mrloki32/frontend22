@@ -25,7 +25,6 @@ tools {
       steps {
         sh 'ls -ltr'
         // build the project and create a JAR file
-        sh 'cd food-delivery-app-FE'
       }
     }
 
