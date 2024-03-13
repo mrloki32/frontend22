@@ -38,7 +38,7 @@ tools {
          stage('Build and Push Docker Image') {
       environment {
         DOCKER_IMAGE = "codedecode25/food-delivery-app-fe:${IMAGE_TAG}"
-        // DOCKERFILE_LOCATION = "java-maven-sonar-argocd-helm-k8s/spring-boot-app/Dockerfile"
+        // DOCKERFILE_LOCATION = "food-delivery-app-FE/Dockerfile"
         REGISTRY_CREDENTIALS = credentials('docker-cred')
       }
       steps {
