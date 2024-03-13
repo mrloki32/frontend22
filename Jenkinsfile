@@ -25,7 +25,7 @@ tools {
       steps {
         sh 'ls -ltr'
         // build the project and create a JAR file
-        sh 'cd /var/lib/jenkins/workspace/demo-cicd'
+        sh 'cd food-delivery-app-FE'
       }
     }
 
@@ -50,7 +50,7 @@ tools {
       }
       steps {
         script {
-            sh 'food-delivery-app-FE/Dockerfile && docker build -t ${DOCKER_IMAGE} .'
+            sh 'Dockerfile && docker build -t ${DOCKER_IMAGE} .'
             def dockerImage = docker.image("${DOCKER_IMAGE}")
             docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
                 dockerImage.push()
