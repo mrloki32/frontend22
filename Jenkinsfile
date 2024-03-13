@@ -21,6 +21,13 @@ tools {
         //git branch: 'main', url: 'https://github.com/mrloki32/food-delivery-app-FE.git'
       }
     }
+    stage('Build and Test') {
+      steps {
+        sh 'ls -ltr'
+        // build the project and create a JAR file
+        sh 'cd food-delivery-app-FE'
+      }
+    }
 
  stage('Install Dependencies') {
       steps {
