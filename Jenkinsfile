@@ -12,7 +12,7 @@ tools {
         SONAR_TOKEN = credentials('sonarqube')
         ECS_CLUSTER = 'jenkins-demo'
         ECS_SERVICE = 'jenkins-svc'
-        DOCKER_IMG = 'codedecode25/food-delivery-app-fe'
+        DOCKER_IMG = 'mrlokidocs/angular'
     }
     stages {
     stage('Checkout') {
@@ -36,7 +36,7 @@ tools {
     }
          stage('Build and Push Docker Image') {
       environment {
-        DOCKER_IMAGE = "codedecode25/food-delivery-app-fe:${IMAGE_TAG}"
+        DOCKER_IMAGE = "mrlokidocs/angular:${IMAGE_TAG}"
         // DOCKERFILE_LOCATION = "/var/lib/jenkins/workspace/demo-cicd/Dockerfile"
         REGISTRY_CREDENTIALS = credentials('docker-cred')
       }
