@@ -42,7 +42,7 @@ tools {
       }
       steps {
         script {
-            sh 'cd food-delivery-app-FE/Dockerfile && docker build -t ${DOCKER_IMAGE} .'
+            sh 'cd /var/lib/jenkins/workspace/demo-cicd@tmp/food-delivery-app-FE && docker build -t ${DOCKER_IMAGE} .'
             def dockerImage = docker.image("${DOCKER_IMAGE}")
             docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
                 dockerImage.push()
