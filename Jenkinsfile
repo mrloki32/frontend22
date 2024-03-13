@@ -25,6 +25,7 @@ tools {
       steps {
         sh 'ls -ltr'
         // build the project and create a JAR file
+        sh 'cd /var/lib/jenkins/workspace/demo-cicd'
       }
     }
 
@@ -44,7 +45,7 @@ tools {
          stage('Build and Push Docker Image') {
       environment {
         DOCKER_IMAGE = "codedecode25/food-delivery-app-fe:${IMAGE_TAG}"
-        // DOCKERFILE_LOCATION = "food-delivery-app-FE/Dockerfile"
+        // DOCKERFILE_LOCATION = "/var/lib/jenkins/workspace/demo-cicd/Dockerfile"
         REGISTRY_CREDENTIALS = credentials('docker-cred')
       }
       steps {
