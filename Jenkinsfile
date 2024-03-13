@@ -4,14 +4,23 @@ pipeline {
 tools {
     nodejs "Nodejs"
 }
-
- environment {
-    DOCKER_REGISTRY = "docker.io"
-    DOCKERHUB_CREDENTIALS = credentials('DOCKER_HUB_CREDENTIAL')
-    VERSION = "${env.BUILD_ID}"
-  }
-
-  stages {
+    environment {
+       AWS_REGION = 'ap-south-1'
+        AWS_ACCOUNT_ID = '211125384091'
+        ECR_REPOSITORY = 'demo-jen'
+        IMAGE_TAG = 'latest'
+        SONAR_TOKEN = credentials('sonarqube')
+        ECS_CLUSTER = 'jenkins-demo'
+        ECS_SERVICE = 'jenkins-svc'
+        DOCKER_IMG = 'codedecode25/food-delivery-app-fe'
+    }
+    stages {
+    stage('Checkout') {
+      steps {
+        sh 'echo passed'
+        //git branch: 'main', url: 'https://github.com/mrloki32/cicd-pipeline-springboot.git'
+      }
+    }
 
  stage('Install Dependencies') {
       steps {
@@ -26,44 +35,49 @@ tools {
         sh 'npm run build'
       }
     }
-
-
-    stage('Docker Build and Push') {
-      steps {
-          sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-          sh 'docker build -t codedecode25/food-delivery-app-fe:${VERSION} .'
-          sh 'docker push codedecode25/food-delivery-app-fe:${VERSION}'
+         stage('Build and Push Docker Image') {
+      environment {
+        DOCKER_IMAGE = "codedecode25/food-delivery-app-fe:${IMAGE_TAG}"
+        // DOCKERFILE_LOCATION = "java-maven-sonar-argocd-helm-k8s/spring-boot-app/Dockerfile"
+        REGISTRY_CREDENTIALS = credentials('docker-cred')
       }
-    }
-
-
-     stage('Cleanup Workspace') {
       steps {
-        deleteDir()
-      }
-    }
-
-     stage('Update Image Tag in GitOps') {
-      steps {
-         checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'git-ssh', url: 'git@github.com:udemy-dev-withK8s-AWS-codedecode/deployment-folder.git']])
         script {
-          // Set the new image tag with the Jenkins build number
-       sh '''
-          sed -i "s/image:.*/image: codedecode25\\/food-delivery-app-fe:${VERSION}/" aws/angular-manifest.yml
-        '''
-
-          sh 'git checkout master'
-          sh 'git add .'
-          sh 'git commit -m "Update image tag"'
-        sshagent(['git-ssh'])
-            {
-                  sh('git push')
+            sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && docker build -t ${DOCKER_IMAGE} .'
+            def dockerImage = docker.image("${DOCKER_IMAGE}")
+            docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
+                dockerImage.push()
             }
         }
       }
+    } 
+        stage('Push to AWS ECR') {
+    steps {
+        withAWS(credentials: '211125384091') {
+            script {
+                sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+                sh "docker tag ${DOCKER_IMG}:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}"
+                sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}"
+            }
+        }
     }
-  }
-
-}
-
-
+}  
+        stage('Deploy to AWS ECS') {
+            steps {
+                script {
+                    sh "aws ecs update-service --cluster ${ECS_CLUSTER} --service ${ECS_SERVICE} --force-new-deployment --region ${AWS_REGION}"
+                }
+            }
+        }
+    }
+    post {
+     always {
+        emailext attachLog: true,
+            subject: "'${currentBuild.result}'",
+            body: "Project: ${env.JOB_NAME}<br/>" +
+                "Build Number: ${env.BUILD_NUMBER}<br/>" +
+                "URL: ${env.BUILD_URL}<br/>",
+            to: 'zeroexploit69@gmail.com'                             
+        }
+    }
+}   
