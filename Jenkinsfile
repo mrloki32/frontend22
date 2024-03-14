@@ -13,6 +13,7 @@ tools {
         ECS_CLUSTER = 'jenkins-demo'
         ECS_SERVICE = 'jenkins-svc'
         DOCKER_IMG = 'mrlokidocs/angular'
+        ecrImageUri = '211125384091.dkr.ecr.ap-south-1.amazonaws.com/demo-jen'
     }
     stages {
     stage('Checkout') {
@@ -61,14 +62,20 @@ tools {
         }
     }
 }  
-        stage('Deploy to AWS ECS') {
-            steps {
-                script {
-                    sh "aws ecs update-service --cluster ${ECS_CLUSTER} --service ${ECS_SERVICE} --force-new-deployment --region ${AWS_REGION}"
-                }
-            }
+  stage('Deploy to AWS ECS') {
+    steps {
+        script {
+            // Fetch the latest Docker image URI from ECR
+            def ecrImageUri = sh(script: "aws ecr describe-images --repository-name demo-jen --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' --output text", returnStdout: true).trim()
+
+            // Create a new task definition revision with the updated image
+            def taskDefinition = sh(script: "[[ -n '${ecrImageUri}' ]] && aws ecs register-task-definition --family jenkins-demo --container-definitions '[{\"name\":\"Angular\",\"image\":\"${ecrImageUri}\"}]' --query 'taskDefinition.taskDefinitionArn' --output text", returnStdout: true).trim()
+
+            // Update the ECS service with the new task definition
+            sh "aws ecs update-service --cluster ${ECS_CLUSTER} --service ${ECS_SERVICE} --task-definition ${taskDefinition} --force-new-deployment --region ${AWS_REGION}"
         }
     }
+}
     post {
      always {
         emailext attachLog: true,
@@ -79,4 +86,5 @@ tools {
             to: 'zeroexploit69@gmail.com'                             
         }
     }
-}   
+}
+}
