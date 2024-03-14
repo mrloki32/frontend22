@@ -43,7 +43,7 @@ tools {
       }
       steps {
         script {
-            sh 'cd /var/lib/jenkins/workspace/demo-cicd@tmp/food-delivery-app-FE && docker build -t ${DOCKER_IMAGE} .'
+            sh 'cd food-delivery-app-FE && docker build -t ${DOCKER_IMAGE} .'
             def dockerImage = docker.image("${DOCKER_IMAGE}")
             docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
                 dockerImage.push()
@@ -83,8 +83,8 @@ tools {
             body: "Project: ${env.JOB_NAME}<br/>" +
                 "Build Number: ${env.BUILD_NUMBER}<br/>" +
                 "URL: ${env.BUILD_URL}<br/>",
-            to: 'zeroexploit69@gmail.com'                             
+     }          to: 'zeroexploit69@gmail.com'                             
         }
     }
-  }
-}  
+}
+
