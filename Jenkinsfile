@@ -12,7 +12,7 @@ pipeline {
         IMAGE_TAG = 'latest'
         SONAR_TOKEN = credentials('sonarqube')
         ECS_CLUSTER = 'jenkins-demo'
-        ECS_SERVICE = 'jenkins-svc'
+        ECS_SERVICE = 'demosvc'
         DOCKER_IMG = 'mrlokidocs/angular'
         ecrImageUri = '211125384091.dkr.ecr.ap-south-1.amazonaws.com/demo-jen:latest'
         taskDefinition = 'jenkins-demo'
