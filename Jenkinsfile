@@ -9,7 +9,14 @@ pipeline {
         ECS_CLUSTER = 'jenkins-demo'
         ECS_SERVICE = 'demosvc'
         DOCKER_IMG = 'mrlokidocs/angular'
-
+    }
+    stages {
+    stage('Checkout') {
+      steps {
+        sh 'echo passed'
+        //git branch: 'main', url: 'https://github.com/mrloki32/food-delivery-app-FE.git'
+      }
+    }
          stage('Build and Push Docker Image') {
       environment {
         DOCKER_IMAGE = "mrlokidocs/angular:${IMAGE_TAG}"
@@ -18,7 +25,7 @@ pipeline {
       }
       steps {
         script {
-            sh 'cd /var/lib/jenkins/workspace/doo && docker build -t ${DOCKER_IMAGE} .'
+            sh 'cd /var/lib/jenkins/workspace/doo docker build -t ${DOCKER_IMAGE} .'
             def dockerImage = docker.image("${DOCKER_IMAGE}")
             docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
                 dockerImage.push()
@@ -45,4 +52,4 @@ pipeline {
             }
         }
     }
-}    
+}       
