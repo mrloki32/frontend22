@@ -1,9 +1,5 @@
 pipeline {
   agent any
-
-tools {
-    nodejs "Nodejs"
-}
     environment {
        AWS_REGION = 'ap-south-1'
         AWS_ACCOUNT_ID = '211125384091'
@@ -13,27 +9,7 @@ tools {
         ECS_CLUSTER = 'jenkins-demo'
         ECS_SERVICE = 'demosvc'
         DOCKER_IMG = 'mrlokidocs/angular'
-    }
-    stages {
-    stage('Checkout') {
-      steps {
-        sh 'echo passed'
-        //git branch: 'main', url: 'https://github.com/mrloki32/food-delivery-app-FE.git'
-      }
-    }
- stage('Install Dependencies') {
-      steps {
 
-        sh 'npm ci'
-      }
-    }
-
-    stage('Build Project') {
-      steps {
-        // Build the Angular project
-        sh 'npm run build'
-      }
-    }
          stage('Build and Push Docker Image') {
       environment {
         DOCKER_IMAGE = "mrlokidocs/angular:${IMAGE_TAG}"
@@ -42,7 +18,7 @@ tools {
       }
       steps {
         script {
-            sh 'cd food-delivery-app-FE && docker build -t ${DOCKER_IMAGE} .'
+            sh 'cd var/lib/jenkins/workspace/demo-cicd/Dockerfile && docker build -t ${DOCKER_IMAGE} .'
             def dockerImage = docker.image("${DOCKER_IMAGE}")
             docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
                 dockerImage.push()
@@ -69,14 +45,4 @@ tools {
             }
         }
     }
-    post {
-     always {
-        emailext attachLog: true,
-            subject: "'${currentBuild.result}'",
-            body: "Project: ${env.JOB_NAME}<br/>" +
-                "Build Number: ${env.BUILD_NUMBER}<br/>" +
-                "URL: ${env.BUILD_URL}<br/>",
-            to: 'zeroexploit69@gmail.com'                             
-        }
-    }
-}   
+}    
